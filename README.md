@@ -1,13 +1,11 @@
 #go-json-rest-middleware-formjson
-x-www-form-urlencoded to json conversion middleware for go-json-rest
-
-*Currently offers basic functionality, API subject to change*
+Provides "x-www-form-urlencoded" to "json" conversion middleware for go-json-rest
 
 ## Explanation
 
-This package provides a [Go-Json-Rest](https://ant0ine.github.io/go-json-rest/) middleware useful converting request data with the content type "application/x-www-form-urlencoded" and converting it to "application/json"
+This package provides a [Go-Json-Rest](https://ant0ine.github.io/go-json-rest/) middleware useful for converting request data with the content type "application/x-www-form-urlencoded" to "application/json"
 
-Used BEFORE ContentTypeCheckerMiddleware in cases where x-www-form-urlencoded data must be handled
+Note: Use BEFORE ContentTypeCheckerMiddleware in cases where x-www-form-urlencoded data must be handled
 
 If "Content-Type" Header set to "x-www-form-urlencoded":
 
@@ -33,7 +31,7 @@ Check for Content-Type application/x-www-form-urlencoded on all routes, and conv
 
 Example 2
 
-Only check specific route and request Type.  This will be the most likely use case.  You should use json content wherever possible, but if you MUST interact with form data on a specific endpoint, you can handle it this way.
+Only check specific path and method.  This will be the most likely use case.  You should use json content wherever possible, but if you MUST interact with form data on a specific endpoint, you can handle it this way.
 
 
 	formJsonMiddleware := &formJson.MiddleWare{}
@@ -49,12 +47,8 @@ Only check specific route and request Type.  This will be the most likely use ca
 		&rest.ContentTypeCheckerMiddleware{},
 	}...)
 
-Above will only convert data POSTed to the "/form-data" path
+Above will only convert form content on a POST request to the "/form-data" path
 
 ## Notes
 
 This middleware performs basic functionality for our specific use case (interact with a 3rd party SAAS solution that could not provide JSON content).  Feel free to improve and submit pull requests.  Thanks!
-
-
-
-
