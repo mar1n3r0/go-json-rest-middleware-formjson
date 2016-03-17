@@ -1,5 +1,5 @@
 // Package formjson provides Middleware for converting posted x-www-form-urlencoded data into json
-package formJson
+package formjson
 
 import (
 	"bytes"
@@ -13,9 +13,9 @@ import (
 )
 
 //Middleware for converting posted form data into json
-type MiddleWare struct{}
+type Middleware struct{}
 
-func (mw *MiddleWare) MiddlewareFunc(handler rest.HandlerFunc) rest.HandlerFunc {
+func (mw *Middleware) MiddlewareFunc(handler rest.HandlerFunc) rest.HandlerFunc {
 
 	return func(w rest.ResponseWriter, r *rest.Request) {
 
@@ -57,6 +57,6 @@ func (mw *MiddleWare) MiddlewareFunc(handler rest.HandlerFunc) rest.HandlerFunc 
 	}
 }
 
-func (mw *MiddleWare) conversionError(w rest.ResponseWriter) {
+func (mw *Middleware) conversionError(w rest.ResponseWriter) {
 	rest.Error(w, "Error Converting Form Data", http.StatusInternalServerError)
 }

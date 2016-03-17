@@ -1,4 +1,4 @@
-package formJson
+package formjson
 
 import (
 	"bytes"
