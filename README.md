@@ -22,10 +22,8 @@ Example 1
 
 Check for Content-Type application/x-www-form-urlencoded on all routes, and convert to application/json
 
-	formJsonMiddleware := &formJson.MiddleWare{}
-
 	api.Use([]rest.Middleware{
-		formJsonMiddleware,
+		&formjson.Middleware{},
 		&rest.ContentTypeCheckerMiddleware{},
 	}...)
 
@@ -40,7 +38,7 @@ Only check specific path and method.  This will be the most likely use case.  Yo
 		Condition: func(request *rest.Request) bool {
 			return request.URL.Path == "/form-data" && request.Method == "POST"
 		},
-		IfTrue: formJsonMiddleware,
+		IfTrue: &formjson.Middleware{},
 	})
 
 	api.Use([]rest.Middleware{
