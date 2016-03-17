@@ -13,9 +13,9 @@ import (
 )
 
 //Middleware for converting posted form data into json
-type ConvertFormData struct{}
+type MiddleWare struct{}
 
-func (mw *ConvertFormData) MiddlewareFunc(handler rest.HandlerFunc) rest.HandlerFunc {
+func (mw *MiddleWare) MiddlewareFunc(handler rest.HandlerFunc) rest.HandlerFunc {
 
 	return func(w rest.ResponseWriter, r *rest.Request) {
 
@@ -57,6 +57,6 @@ func (mw *ConvertFormData) MiddlewareFunc(handler rest.HandlerFunc) rest.Handler
 	}
 }
 
-func (mw *ConvertFormData) conversionError(w rest.ResponseWriter) {
+func (mw *MiddleWare) conversionError(w rest.ResponseWriter) {
 	rest.Error(w, "Error Converting Form Data", http.StatusInternalServerError)
 }

@@ -26,9 +26,9 @@ func simplePostEndpoint(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(body)
 }
 
-func NewSimpleAPI(convertFormData *ConvertFormData) http.Handler {
+func NewSimpleAPI(mw *MiddleWare) http.Handler {
 	api := rest.NewApi()
-	api.Use(convertFormData)
+	api.Use(mw)
 	router, _ := rest.MakeRouter(
 		rest.Post("/", simplePostEndpoint),
 		rest.Get("/", simpleGetEndpoint),
@@ -38,7 +38,7 @@ func NewSimpleAPI(convertFormData *ConvertFormData) http.Handler {
 }
 
 func TestPostValidFormData(t *testing.T) {
-	handler := NewSimpleAPI(&ConvertFormData{})
+	handler := NewSimpleAPI(&MiddleWare{})
 
 	data := url.Values{}
 	data.Set("name", "foo")
@@ -55,7 +55,7 @@ func TestPostValidFormData(t *testing.T) {
 }
 
 func TestPostInvalidFormData(t *testing.T) {
-	handler := NewSimpleAPI(&ConvertFormData{})
+	handler := NewSimpleAPI(&MiddleWare{})
 
 	data := "mal&formed"
 
@@ -70,7 +70,7 @@ func TestPostInvalidFormData(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	handler := NewSimpleAPI(&ConvertFormData{})
+	handler := NewSimpleAPI(&MiddleWare{})
 
 	req := test.MakeSimpleRequest("GET", "http://localhost/", nil)
 	recorded := test.RunRequest(t, handler, req)
@@ -80,7 +80,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestPostJSON(t *testing.T) {
-	handler := NewSimpleAPI(&ConvertFormData{})
+	handler := NewSimpleAPI(&MiddleWare{})
 
 	simplePostData := map[string]interface{}{
 		"john": "doe",
