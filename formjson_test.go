@@ -3,93 +3,70 @@ package formjson
 import (
 	"bytes"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"strconv"
 	"testing"
-
-	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/ant0ine/go-json-rest/rest/test"
 )
 
-type JSON map[string]interface{}
-
-func simpleGetEndpoint(w rest.ResponseWriter, r *rest.Request) {
-	body := map[string]interface{}{
-		"status": "success",
-	}
-	w.WriteJson(body)
-}
-
-func simplePostEndpoint(w rest.ResponseWriter, r *rest.Request) {
-	var body map[string]interface{}
-	r.DecodeJsonPayload(&body)
-	w.WriteJson(body)
-}
-
-func NewSimpleAPI(mw *MiddleWare) http.Handler {
-	api := rest.NewApi()
-	api.Use(mw)
-	router, _ := rest.MakeRouter(
-		rest.Post("/", simplePostEndpoint),
-		rest.Get("/", simpleGetEndpoint),
-	)
-	api.SetApp(router)
-	return api.MakeHandler()
-}
-
-func TestPostValidFormData(t *testing.T) {
-	handler := NewSimpleAPI(&MiddleWare{})
+func TestFormJson(t *testing.T) {
+	m := FormJson()
+	h := m(http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}))
 
 	data := url.Values{}
 	data.Set("name", "foo")
 	data.Add("surname", "bar")
 
-	r, _ := http.NewRequest("POST", "http://localhost/", bytes.NewBufferString(data.Encode())) // <-- URL-encoded payload
-	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
+	w := httptest.NewRecorder()
+	req, err := http.NewRequest("POST", "/", bytes.NewBufferString(data.Encode()))
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	recordedPost := test.RunRequest(t, handler, r)
+	h.ServeHTTP(w, req)
 
-	recordedPost.CodeIs(http.StatusOK)
-	recordedPost.BodyIs(`{"name":"foo","surname":"bar"}`)
+	if w.Header().Get("Content-Type") != "application/json" {
+		t.Error("FormJson returned unexpected headers: ", w.Header())
+	}
+
+	if w.Code != http.StatusOK {
+		t.Error("Test http form request returned unexpected status code: ", w.Result().StatusCode)
+	}
+
+	cmp := bytes.Compare(w.Body.Bytes(), append([]byte(`{"name":"foo","surname":"bar"}`), 10))
+	if cmp != 0 {
+		t.Errorf("FormJson returned unexpected body: %s | %d", w.Body.String(), cmp)
+	}
 }
 
-func TestPostInvalidFormData(t *testing.T) {
-	handler := NewSimpleAPI(&MiddleWare{})
+func TestFormJsonError(t *testing.T) {
+	m := FormJson()
+	h := m(http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}))
 
 	data := "mal&formed"
 
-	r, _ := http.NewRequest("POST", "http://localhost/", bytes.NewBufferString(data)) // <-- URL-encoded payload
-	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.Header.Add("Content-Length", strconv.Itoa(len(data)))
-
-	recordedPost := test.RunRequest(t, handler, r)
-
-	recordedPost.CodeIs(http.StatusInternalServerError)
-	recordedPost.BodyIs(`{"Error":"Error Converting Form Data"}`)
-}
-
-func TestGet(t *testing.T) {
-	handler := NewSimpleAPI(&MiddleWare{})
-
-	req := test.MakeSimpleRequest("GET", "http://localhost/", nil)
-	recorded := test.RunRequest(t, handler, req)
-
-	recorded.CodeIs(http.StatusOK)
-	recorded.BodyIs(`{"status":"success"}`)
-}
-
-func TestPostJSON(t *testing.T) {
-	handler := NewSimpleAPI(&MiddleWare{})
-
-	simplePostData := map[string]interface{}{
-		"john": "doe",
-		"age":  30,
+	w := httptest.NewRecorder()
+	req, err := http.NewRequest("POST", "/", bytes.NewBufferString(data))
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Add("Content-Length", strconv.Itoa(len(data)))
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	postRequest := test.MakeSimpleRequest("POST", "https://localhost/", simplePostData)
-	recordedPost := test.RunRequest(t, handler, postRequest)
+	h.ServeHTTP(w, req)
 
-	recordedPost.CodeIs(http.StatusOK)
-	recordedPost.BodyIs(`{"age":30,"john":"doe"}`)
+	if w.Header().Get("Content-Type") != "application/json" {
+		t.Error("FormJson returned unexpected headers: ", w.Header())
+	}
+
+	if w.Code != http.StatusInternalServerError {
+		t.Error("Test http form request returned unexpected status code: ", w.Result().StatusCode)
+	}
+
+	cmp := bytes.Compare(w.Body.Bytes(), append([]byte(`{"Error":"Error Converting Form Data"}`), 10))
+	if cmp != 0 {
+		t.Errorf("FormJson returned unexpected body: %s | %d", w.Body.String(), cmp)
+	}
 }
