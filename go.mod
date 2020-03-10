@@ -1,4 +1,4 @@
-module github.com/mar1n3r0/gorouter-middleware-formjson/v1
+module github.com/mar1n3r0/gorouter-middleware-formjson
 
 go 1.14
 
