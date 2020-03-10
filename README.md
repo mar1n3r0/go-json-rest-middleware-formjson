@@ -12,7 +12,7 @@ If "Content-Type" Header set to "x-www-form-urlencoded":
 
 ## Installation
 
-    go get https://github.com/mar1n3r0/gorouter-middleware-formjson
+    go get github.com/mar1n3r0/gorouter-middleware-formjson
 
 ## Usage
 
