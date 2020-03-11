@@ -40,13 +40,17 @@ func FormJson() gorouter.MiddlewareFunc {
 					}
 				}
 
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusOK)
-				err := json.NewEncoder(w).Encode(jsonMap)
+				//marshal json
+				jsonString, err := json.Marshal(jsonMap)
 				if err != nil {
-					panic(err)
+					//error marshalling, skip to handler
+					conversionError(w)
+					return
 				}
 
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusOK)
+				w.Write(jsonString)
 			}
 
 			next.ServeHTTP(w, r)

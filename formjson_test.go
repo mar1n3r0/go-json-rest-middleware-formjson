@@ -11,7 +11,9 @@ import (
 
 func TestFormJson(t *testing.T) {
 	m := FormJson()
-	h := m(http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}))
+	h := m(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+	}))
 
 	data := url.Values{}
 	data.Set("name", "foo")
@@ -35,9 +37,9 @@ func TestFormJson(t *testing.T) {
 		t.Error("Test http form request returned unexpected status code: ", w.Result().StatusCode)
 	}
 
-	cmp := bytes.Compare(w.Body.Bytes(), append([]byte(`{"name":"foo","surname":"bar"}`), 10))
+	cmp := bytes.Compare(w.Body.Bytes(), append([]byte(`{"name":"foo","surname":"bar"}`)))
 	if cmp != 0 {
-		t.Errorf("FormJson returned unexpected body: %s | %d", w.Body.String(), cmp)
+		t.Errorf("FormJson returned unexpected body: %s", w.Body.String())
 	}
 }
 
