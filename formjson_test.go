@@ -38,12 +38,12 @@ func TestFormJson(t *testing.T) {
 	}
 
 	if w.Code != http.StatusOK {
-		t.Error("Test http form request returned unexpected status code: ", w.Result().StatusCode)
+		t.Error("Test http form request returned unexpected status code: ", w.Code)
 	}
 
 	cmp := bytes.Compare(body, append([]byte(`{"name":"foo","surname":"bar"}`)))
 	if cmp != 0 {
-		t.Errorf("FormJson returned unexpected body: %s", w.Body.String())
+		t.Errorf("FormJson returned unexpected body: %s | %d", body, cmp)
 	}
 }
 
@@ -63,16 +63,21 @@ func TestFormJsonError(t *testing.T) {
 
 	h.ServeHTTP(w, req)
 
-	if w.Header().Get("Content-Type") != "application/json" {
-		t.Error("FormJson returned unexpected headers: ", w.Header())
+	body, e := ioutil.ReadAll(req.Body)
+	if e != nil {
+		panic(e)
+	}
+
+	if w.Header().Get("Content-type") != "application/json" {
+		t.Error("FormJson returned unexpected headers: ", req.Header)
 	}
 
 	if w.Code != http.StatusInternalServerError {
-		t.Error("Test http form request returned unexpected status code: ", w.Result().StatusCode)
+		t.Error("Test http form request returned unexpected status code: ", w.Code)
 	}
 
 	cmp := bytes.Compare(w.Body.Bytes(), append([]byte(`{"Error":"Error Converting Form Data"}`), 10))
 	if cmp != 0 {
-		t.Errorf("FormJson returned unexpected body: %s | %d", w.Body.String(), cmp)
+		t.Errorf("FormJson returned unexpected body: %s | %d", body, cmp)
 	}
 }

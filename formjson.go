@@ -4,10 +4,12 @@ package formjson
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
+	"log"
 	"mime"
 	"net/http"
-	"strings"
+	"net/url"
 
 	"github.com/vardius/gorouter/v4"
 )
@@ -27,15 +29,17 @@ func FormJson() gorouter.MiddlewareFunc {
 				// get body
 				buf, _ := ioutil.ReadAll(r.Body)
 
+				params, err := url.ParseQuery(string(buf))
+				if err != nil {
+					log.Fatal(err)
+					return
+				}
 				// map body form data
 				jsonMap := map[string]string{}
-				sections := strings.Split(string(buf), "&")
-				for _, sectionValue := range sections {
-					sectionParts := strings.Split(sectionValue, "=")
-					if len(sectionParts) == 2 {
-						jsonMap[sectionParts[0]] = sectionParts[1]
+				for key, val := range params {
+					if len(val[0]) != 0 {
+						jsonMap[key] = val[0]
 					} else {
-						//error converting, skip to handler
 						conversionError(w)
 						return
 					}
@@ -66,6 +70,7 @@ func FormJson() gorouter.MiddlewareFunc {
 }
 
 func conversionError(w http.ResponseWriter) {
+	fmt.Printf("here")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusInternalServerError)
 	err := json.NewEncoder(w).Encode(map[string]string{"Error": "Error Converting Form Data"})
