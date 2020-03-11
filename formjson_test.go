@@ -2,6 +2,7 @@ package formjson
 
 import (
 	"bytes"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -11,9 +12,7 @@ import (
 
 func TestFormJson(t *testing.T) {
 	m := FormJson()
-	h := m(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-	}))
+	h := m(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 
 	data := url.Values{}
 	data.Set("name", "foo")
@@ -29,15 +28,20 @@ func TestFormJson(t *testing.T) {
 
 	h.ServeHTTP(w, req)
 
-	if w.Header().Get("Content-Type") != "application/json" {
-		t.Error("FormJson returned unexpected headers: ", w.Header())
+	body, e := ioutil.ReadAll(req.Body)
+	if e != nil {
+		panic(e)
+	}
+
+	if req.Header.Get("Content-type") != "application/json" {
+		t.Error("FormJson returned unexpected headers: ", req.Header)
 	}
 
 	if w.Code != http.StatusOK {
 		t.Error("Test http form request returned unexpected status code: ", w.Result().StatusCode)
 	}
 
-	cmp := bytes.Compare(w.Body.Bytes(), append([]byte(`{"name":"foo","surname":"bar"}`)))
+	cmp := bytes.Compare(body, append([]byte(`{"name":"foo","surname":"bar"}`)))
 	if cmp != 0 {
 		t.Errorf("FormJson returned unexpected body: %s", w.Body.String())
 	}

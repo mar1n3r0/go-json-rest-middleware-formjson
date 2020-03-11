@@ -2,6 +2,7 @@
 package formjson
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"mime"
@@ -48,9 +49,11 @@ func FormJson() gorouter.MiddlewareFunc {
 					return
 				}
 
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusOK)
-				w.Write(jsonString)
+				//write new body
+				r.Body = ioutil.NopCloser(bytes.NewReader([]byte(string(jsonString))))
+
+				//convert content-type header
+				r.Header.Set("Content-Type", "application/json")
 			}
 
 			next.ServeHTTP(w, r)
