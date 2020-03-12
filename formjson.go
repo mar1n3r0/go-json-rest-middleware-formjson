@@ -4,7 +4,6 @@ package formjson
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"mime"
@@ -26,6 +25,7 @@ func FormJson() gorouter.MiddlewareFunc {
 
 			mediatype, _, _ := mime.ParseMediaType(r.Header.Get("Content-Type"))
 			if mediatype == "application/x-www-form-urlencoded" {
+				defer r.Body.Close()
 				// get body
 				buf, _ := ioutil.ReadAll(r.Body)
 
@@ -70,7 +70,6 @@ func FormJson() gorouter.MiddlewareFunc {
 }
 
 func conversionError(w http.ResponseWriter) {
-	fmt.Printf("here")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusInternalServerError)
 	err := json.NewEncoder(w).Encode(map[string]string{"Error": "Error Converting Form Data"})
