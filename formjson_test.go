@@ -63,11 +63,6 @@ func TestFormJsonError(t *testing.T) {
 
 	h.ServeHTTP(w, req)
 
-	body, e := ioutil.ReadAll(req.Body)
-	if e != nil {
-		panic(e)
-	}
-
 	if w.Header().Get("Content-type") != "application/json" {
 		t.Error("FormJson returned unexpected headers: ", req.Header)
 	}
@@ -76,8 +71,8 @@ func TestFormJsonError(t *testing.T) {
 		t.Error("Test http form request returned unexpected status code: ", w.Code)
 	}
 
-	cmp := bytes.Compare(w.Body.Bytes(), append([]byte(`{"Error":"Error Converting Form Data"}`), 10))
+	cmp := bytes.Compare(w.Body.Bytes(), append([]byte(`{"code":"internal","message":"Error converting form data"}`), 10))
 	if cmp != 0 {
-		t.Errorf("FormJson returned unexpected body: %s | %d", body, cmp)
+		t.Errorf("FormJson returned unexpected body: %s | %d", w.Body.Bytes(), cmp)
 	}
 }

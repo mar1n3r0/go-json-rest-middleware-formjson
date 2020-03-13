@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/mar1n3r0/go-api-boilerplate/pkg/errors"
+	"github.com/mar1n3r0/go-api-boilerplate/pkg/http/response"
 	"github.com/vardius/gorouter/v4"
 )
 
@@ -40,7 +42,7 @@ func FormJson() gorouter.MiddlewareFunc {
 					if len(val[0]) != 0 {
 						jsonMap[key] = val[0]
 					} else {
-						conversionError(w)
+						conversionError(r, w)
 						return
 					}
 				}
@@ -49,7 +51,7 @@ func FormJson() gorouter.MiddlewareFunc {
 				jsonString, err := json.Marshal(jsonMap)
 				if err != nil {
 					//error marshalling, skip to handler
-					conversionError(w)
+					conversionError(r, w)
 					return
 				}
 
@@ -69,11 +71,7 @@ func FormJson() gorouter.MiddlewareFunc {
 	return m
 }
 
-func conversionError(w http.ResponseWriter) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusInternalServerError)
-	err := json.NewEncoder(w).Encode(map[string]string{"Error": "Error Converting Form Data"})
-	if err != nil {
-		panic(err)
-	}
+func conversionError(r *http.Request, w http.ResponseWriter) {
+	response.RespondJSONError(r.Context(), w, errors.New(errors.INTERNAL, "Error converting form data"))
+	return
 }
