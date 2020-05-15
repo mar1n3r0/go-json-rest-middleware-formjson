@@ -39,11 +39,8 @@ func FormJson() gorouter.MiddlewareFunc {
 				// map body form data
 				jsonMap := map[string]string{}
 				for key, val := range params {
-					if len(val[0]) != 0 {
+					if len(val[0]) > 0 {
 						jsonMap[key] = val[0]
-					} else {
-						conversionError(r, w)
-						return
 					}
 				}
 
